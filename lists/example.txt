@@ -1,0 +1,4 @@
+d:/wwwroot/
+d:/wwwroot1/
+d:/www/
+d:/root/
