@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use utf8;
+use feature 'say';
+use lib '/secure/Common/src/cpan';
+
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use Data::Dumper;
+use Redis::Client;
+use Getopt::Long;
+
+binmode(STDOUT, ':encoding(utf8)');
+
+my %opts = (
+    host  => undef,
+    port  => 6379
+);
+GetOptions (\%opts, 'host|h=s', 'port=i');
+
+unless (defined $opts{host} and defined $opts{port} and @ARGV)
+{
+    die "Usage:
+         $0 -h 124.172.117.43 -p 6379 list_of_files.txt
+\n";
+}
+
+my $client = Redis::Client->new (host => $opts{host}, port => $opts{port}) 
+    or die "Could not connect to redis server\n";
+
+for (@ARGV) {
+    open my $fh, '<', $_ or die "$_: $!";
+    while (<$fh>) {
+        chomp (my $dir = $_);
+
+        eval {
+            my $value  = $client->config_set ('dir', $dir);
+            if ($value eq 'OK') {
+                say '[DIR]  ', $dir;   
+            }
+        };
+        if ($@) {
+            if ($@ =~ /Not a directory/) {
+                say '[FILE] ', $dir;
+            } elsif ($@ !~ /No such file or directory/) {
+                die "Redis error $@\n";
+            }
+        }
+    }
+
+}
