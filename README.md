@@ -8,4 +8,4 @@
 
 截图
 
-!(contrib/screen.jpg)[contrib/screen.jpg]
+<img src="contrib/screen.jpg" height="352" />
